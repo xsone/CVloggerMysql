@@ -72,8 +72,9 @@ import serial
 import time
 import mysql.connector
 import re
+import RPi.GPIO as GPIO
 
-versie = "4.6"
+versie = "4.8"
 print("DSMR 5.0 P1 uitlezer", versie)
 print("Control-C om te stoppen")
 print("Energie-logger gestart...")
@@ -88,14 +89,22 @@ inputString = []
 gas = 0 #Meter Gas verbruikt
 
 #Waterverbruik
-waterIntWaarde = 0
-water = 0 #in liters
-waterM3Waarde = 0
-#interuptTellerWater = false
+waterInputPin = 23
+waterLtr = 0
+waterM3 = 0
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(waterInputPin, GPIO.IN)
+GPIO.add_event_detect(waterInputPin, GPIO.RISING)  # add rising edge detection on a channel
 
 #Waarden Slimme Meter P1-poort
-elecLTverbruik = 0 #Meter laag tarief Electriciteit verbruikt
-elecLTgeleverd = 0  #Meter laag tarief Electriciteit opgewekt
+elecLTverbruik = 11 #Meter laag tarief Electriciteit verbruikt
+elecLTgeleverd = 22  #Meter laag tarief Electriciteit opgewekt
+elecHTverbruik = 33 #Meter hoog tarief Electriciteit verbruikt
+elecHTgeleverd = 44  #Meter hoog tarief Electriciteit opgewekt
+elecTOTverbruik = 0 #Meter totaal laag + hoog tarief Electriciteit verbruikt
+elecTOTgeleverd = 0  #Meter totaal laag + hoog tarief Electriciteit opgewekt
 
 elecACTverbruik = "11.1" #Meter laag tarief Electriciteit verbruikt
 elecACTgeleverd = "22.2" #Meter laag tarief Electriciteit opgewekt
@@ -126,12 +135,21 @@ def decodeTelegramSql():
         if re.match('(?=0-1:24.2.1)', inputString):
            gas = inputString[26:31]
            print("gas: ", gas)
+
         if re.match('(?=1-0:1.8.1)', inputString):
            elecLTverbruik = inputString[10:16]
            print("elecLTverbruik: ", elecLTverbruik)
         if re.match('(?=1-0:2.8.1)', inputString):
            elecLTgeleverd = inputString[10:16]
            print("elecLTgeleverd: ", elecLTgeleverd)
+
+        if re.match('(?=1-0:1.8.2)', inputString):
+           elecHTverbruik = inputString[10:16]
+           print("elecHTverbruik: ", elecHTverbruik)
+        if re.match('(?=1-0:2.8.2)', inputString):
+           elecHTgeleverd = inputString[10:16]
+           print("elecHTgeleverd: ", elecHTgeleverd)
+
         if re.match('(?=1-0:1.7.0)', inputString):
            elecACTverbruik = int(float(inputString[10:16])*1000)
            print("elecACTverbruik: ", elecACTverbruik)
@@ -144,6 +162,11 @@ def decodeTelegramSql():
            checksum = True
            ser.close()
 
+    elecTOTverbruik = elecLTverbruik + elecHTverbruik
+    print("elecTOTverbruik: ", elecTOTverbruik)
+    elecTOTgeleverd = elecLTgeleverd + elecHTgeleverd
+    print("elecTOTgeleverd: ", elecTOTgeleverd)
+
     #Schrijf naar MySql database
     db_connection = mysql.connector.connect(
         host='192.168.178.20',
@@ -154,13 +177,18 @@ def decodeTelegramSql():
     )
     print(db_connection)
     db_cursor = db_connection.cursor()
-    db_cursor.execute("INSERT INTO energiemeter (gas, water, elecLTverbruik, elecLTgeleverd, elecACTverbruik, elecACTgeleverd) VALUES(%s, %s, %s, %s, %s, %s)",
-                      (gas, water, elecLTverbruik, elecLTgeleverd, elecACTverbruik, elecACTgeleverd))
+    db_cursor.execute("INSERT INTO energiemeter (gas, waterLtr, elecLTverbruik, elecLTgeleverd, elecHTverbruik, elecHTgeleverd, elecTOTverbruik, elecTOTgeleverd, elecACTverbruik, elecACTgeleverd) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                                                (gas, waterLtr, elecLTverbruik, elecLTgeleverd, elecHTverbruik, elecHTgeleverd, elecTOTverbruik, elecTOTgeleverd, elecACTverbruik, elecACTgeleverd))
     db_connection.commit()
 
 
 #Dit is de oneindige loop()
 while True:
+    if GPIO.event_detected(waterInputPin):
+        waterLtr = waterLtr + 1
+        print("Water Liters: ", waterLtr)
+        GPIO.output(waterLedPin, GPIO.HIGH)
+
     if ((time.time() - lastConnectionTime) >= postingInterval):
        lastConnectionTime = time.time()
        print("Loggen sec: ", time.localtime().tm_sec)
