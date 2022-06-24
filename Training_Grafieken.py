@@ -21,8 +21,19 @@ z = []
 datetime_str = "31OCT2020231032"
 
 datum = []
+jaar = []
+maand = []
+dag = []
+uur = []
+min = []
+sec = []
+tijd = []
+tijdtst = []
+
 waterLtr = []
 elecACTgeleverd = []
+
+teller = 0
 
 db_connection = mysql.connector.connect(
         host='192.168.178.20',
@@ -66,29 +77,47 @@ try:
         #elecACTgeleverd = row[2]
         elecACTgeleverd.append(row[2])
 
+        jaar.append(datum[teller].year)
+        maand.append(datum[teller].month)
+        dag.append(datum[teller].day)
+        uur.append(datum[teller].hour)
+        min.append(datum[teller].minute)
+        sec.append(datum[teller].second)
+        tijd.append(datum[teller].time())
+        teller = teller + 1
+
     #datum[0] is datetime.datetime object
-    jaar = datum[0].year
-    print("Jaar: {:04d}".format(jaar))
-    maand = datum[0].month
-    print("Maand: {:02d}".format(maand))
-    dag = datum[0].day
-    print("Dag: {:02d}".format(dag))
-    uur = datum[0].hour
-    min = datum[0].minute
-    sec = datum[0].second
-    #tijd = "{:02d}:{:02d}:{:02d}".format(uur, min, sec)
-    tijd = datum[0].time()
-    print("Tijd: ", tijd)
+    # jaar = datum[0].year
+    # print("Jaar: {:04d}".format(jaar))
+    # maand = datum[0].month
+    # print("Maand: {:02d}".format(maand))
+    # dag = datum[0].day
+    # print("Dag: {:02d}".format(dag))
+    # uur = datum[0].hour
+    # min = datum[0].minute
+    # sec = datum[0].second
+    # #tijd = "{:02d}:{:02d}:{:02d}".format(uur, min, sec)
+    tijdtst = datum[0].time()
+    print("Tijdtst: ", tijdtst)
+    print("Jaar: ", jaar)
+    print("Maand ", maand)
+    print("Dag: ", dag)
+    print("Uur: ", uur)
+    print("Min: ", min)
+    print("Sec: ", sec)
+    # tijd = "{:02d}:{:02d}:{:02d}".format(uur, min, sec)
+    print("Tijd: ", uur)
     print("Datum: ", datum)
     print("Water: ", waterLtr)
     print("ElecDel: ", elecACTgeleverd)
 
     # Visualizing Data using Matplotlib
-    plt.plot(datum, waterLtr)
-    plt.plot(datum, elecACTgeleverd)
+    #plt.plot(datum, waterLtr)
+    plt.bar(tijd, waterLtr)
+    #plt.plot(datum, elecACTgeleverd)
     # plt.plot(tijd, waterLtr)
     # plt.plot(tijd, elecACTgeleverd)
-    plt.ylim(0, 2000)
+    plt.ylim(0, 300)
     plt.xlabel("Datum")
     plt.ylabel("WaterLtr")
     plt.title("Energiemeter")
