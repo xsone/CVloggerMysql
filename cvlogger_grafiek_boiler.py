@@ -1,4 +1,5 @@
 # https://saralgyaan.com/posts/matplotlib-tutorial-in-python-chapter-1-introduction/
+import datetime
 from datetime import *
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,12 +8,18 @@ import time
 import mysql.connector
 
 # plt.plot([0,1,2,3,4], label='y = x')
-# plt.title('Y = X Straight Line')
-# plt.ylabel('Y Axis')
+# plotting a line plot after changing it's width and height
+f = plt.figure()
+f.set_figwidth(15)
+f.set_figheight(9)
+plt.title('Boiler AAN in sec.')
+plt.xlabel('Tijdstip boiler AAN')
+plt.ylabel('Sec. AAN')
+
+
 # plt.yticks([1,2,3,4])
 # plt.legend(loc = 'best')
 # plt.show()
-
 
 
 x = []
@@ -21,28 +28,48 @@ z = []
 
 datetime_str = "31OCT2020231032"
 
-datum = []
+tijd = []
+tijdStart = []
+tijdStop = []
+tijdVerschil = []
+tijdsDuur = []
+timeState = True
+
+# dagnr = 30
+# maandnr = 8
+# jaarnr = 2022
+# datumBegin = str(dagnr) + '-' + str(maandnr) + '-' + str(dagnr)
+datumBegin = "2022-08-29"
+datumEind = "2022-08-30"
+
+
 jaar = []
 maand = []
 dag = []
 uur = []
 min = []
 sec = []
-tijd = []
-tijdtst = []
+datum = []
 
 waterLtr = []
 elecACTgeleverd = []
 elecACTverbruik = []
+boilerStatus = []
 
 teller = 0
 
+
+def addlabels(x, y):
+    for i in range(len(x)):
+        plt.text(i, y[i], y[i])
+
+
 db_connection = mysql.connector.connect(
-        host='192.168.178.20',
-        port=3307,
-        user='Arduino',
-        passwd="#@Xymox123",
-        db='Energielogger',
+    host='192.168.178.20',
+    port=3307,
+    user='Arduino',
+    passwd="#@Xymox123",
+    db='Energielogger',
 )
 
 if db_connection:
@@ -64,39 +91,67 @@ for rows in db_cursor:
 
 
 try:
-    #db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter ")
-    db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-06-30 19:21:18'")
-    #db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-07-01 23:00:00'")
-    #db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-07-01 23:00:00'")
-    # query_data = "SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter"
-    #query_data = "SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter"
-    #plot_data = pd.read_sql(query_data, db_connection)
-    print("Query geslaagd...")
-    #for row in db_cursor.fetchmany(10): haalt 10 records op
-    for row in db_cursor:
-        #print(row)
-        #datum = row[0]
-        datum.append(row[0])
-        #print(datum)
-        #waterLtr = row[1]
-        waterLtr.append(row[1])
-        #print(waterLtr)
-        #elecACTgeleverd = row[2]
-        elecACTgeleverd.append(row[2])
-        elecACTverbruik.append(row[3])
+    # db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter ")
+    db_cursor.execute(
+        "SELECT datum, boilerStatus FROM cvlogger WHERE datum >= '2022-08-31 00:00:00' AND datum <= '2022-08-31 23:59:59'")
+        #"SELECT datum, boilerStatus FROM cvlogger WHERE datum >= '" + datumBegin + " 00:00:00' AND datum <= '" + datumEind + " 23:59:59'")
 
-        jaar.append(datum[teller].year)
-        maand.append(datum[teller].month)
-        dag.append(datum[teller].day)
-        uur.append(datum[teller].hour)
-        min.append(datum[teller].minute)
-        sec.append(datum[teller].second)
-        #tijd.append(datum[teller].time)
-        tijd.append(str(datum[teller].hour) + ':' + str(datum[teller].minute) + ':' + str(datum[teller].second))
+    # db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-07-01 23:00:00'")
+    # db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-07-01 23:00:00'")
+    # query_data = "SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter"
+    # query_data = "SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter"
+    # plot_data = pd.read_sql(query_data, db_connection)
+    print("Query geslaagd...")
+    # for row in db_cursor.fetchmany(10): haalt 10 records op
+    for row in db_cursor:
+        print(row)
+        # datum = row[0]
+        tijd.append(row[0])
+        print(tijd)
+        # waterLtr = row[1]
+        boilerStatus.append(row[1])
+        # print(waterLtr)
+        # elecACTgeleverd = row[2]
+        # elecACTgeleverd.append(row[2])
+        # elecACTverbruik.append(row[3])
+
+        jaar.append(tijd[teller].year)
+        maand.append(tijd[teller].month)
+        dag.append(tijd[teller].day)
+        uur.append(tijd[teller].hour)
+        min.append(tijd[teller].minute)
+        sec.append(tijd[teller].second)
+        datum.append(str(tijd[teller].year) + '-' + str(tijd[teller].month) + '-' + str(tijd[teller].day) + ' ' +
+                     str(tijd[teller].hour) + ':' + str(tijd[teller].minute) + ':' + str(tijd[teller].second))
+
+        if (boilerStatus[teller] == 1 and timeState is True):
+            tijdStart = tijd[teller]
+            tijdStartInt = int(tijdStart.strftime('%H%M%S'))
+            print("Tijdstart: ", tijdStart)
+            timeState = False
+        if (boilerStatus[teller] == 0 and timeState is False):
+            tijdStop = tijd[teller]
+            tijdStopInt = int(tijdStop.strftime('%H%M%S'))
+            print("Tijdstop: ", tijdStop)
+            timeState = True
+            tijdDiv = tijdStopInt - tijdStartInt
+            print("TijdDiv: ", tijdDiv)
+            tijdStart = str(tijd[teller].hour) + ':' + str(tijd[teller].minute) + ':' + str(tijd[teller].second)
+            tijdStop = str(tijd[teller].hour) + ':' + str(tijd[teller].minute) + ':' + str(tijd[teller].second)
+            #tijd.append(str(tijd[teller].hour) + ':' + str(tijd[teller].minute) + ':' + str(tijd[teller].second))
+            datumStart = (str(tijd[teller].year) + '-' + str(tijd[teller].month) + '-' + str(tijd[teller].day) + ' ' +
+                         str(tijd[teller].hour) + ':' + str(tijd[teller].minute) + ':' + str(tijd[teller].second))
+
+            #datumStart = tijdStart + datumBegin
+            plt.text(datumStart, tijdDiv, tijdDiv, ha='center', color='red')
+            plt.bar(datumStart, tijdDiv, label='ver', color='red')
+            #plt.ylabel(datumStart, datumDiv)
+            # calling the function to add value labels
+
+            # plt.bar(sec, datumDiv, label='ver', color='red')
         teller = teller + 1
 
-
-    #datum[0] is datetime.datetime object
+    # datum[0] is datetime.datetime object
     # jaar = datum[0].year
     # print("Jaar: {:04d}".format(jaar))
     # maand = datum[0].month
@@ -106,48 +161,61 @@ try:
     # uur = datum[0].hour
     # min = datum[0].minute
     # sec = datum[0].second
-    #tijdtst = datum[0].time()
-    #print("Tijdtst: ", tijdtst)
+    # tijdtst = datum[0].time()
+    # print("Tijdtst: ", tijdtst)
     # print("Jaar: ", jaar)
     # print("Maand ", maand)
     # print("Dag: ", dag)
-    #print("Uur: ", uur)
+    # print("Uur: ", uur)
     # print("Min: ", min)
     # print("Sec: ", sec)
-    #tijd = "{:02d}:{:02d}:{:02d}".format(uur, min, sec)
-    #print("Tijd: {:02d}:{:02d}:{:02d}".format(uur, min, sec))
-    #tijdtst = uur + ':' + min
-    print("Tijd: ", tijd)
-    #print("Tijd: ", uur)
-    #print("Datum: ", datum)
-    #print("Water: ", waterLtr)
-    print("ElecGel: ", elecACTgeleverd)
-    print("ElecVer: ", elecACTverbruik)
+    # tijd = "{:02d}:{:02d}:{:02d}".format(uur, min, sec)
+    # print("Tijd: {:02d}:{:02d}:{:02d}".format(uur, min, sec))
+
+    # tijdtst = uur + ':' + min
+    # print("Tijd: ", tijd)
+    # print("TijdsDuur: ", tijdsDuur)
+
+    # print("Tijd: ", uur)
+    # print("Datum: ", datum)
+    # print("Water: ", waterLtr)
+    # print("ElecGel: ", elecACTgeleverd)
+    # print("ElecVer: ", elecACTverbruik)
+    # print("BoilerStatus: ", boilerStatus)
 
     # Visualizing Data using Matplotlib
     # figure, axes = plt.subplots(figsize=(10, 6))
     # axes.xaxis.set_major_formatter(mdates.DateFormatter('%H-%M-%S'))
-    #plt.plot(datum, waterLtr)
-    #plt.bar(dag, elecACTgeleverd)
+    # plt.plot(datum, waterLtr)
+    # plt.bar(dag, elecACTgeleverd)
     # plt.bar(tijd, elecACTgeleverd, label='lev', color='green')
     # plt.bar(tijd, elecACTverbruik, label='ver', color='red')
-    plt.bar(uur, elecACTgeleverd, label='lev', color='green')
-    plt.bar(uur, elecACTverbruik, label='ver', color='red')
-    plt.bar(uur, waterLtr, label='water', color='blue')
-    plt.ylim(0, 4500)
-    plt.xlabel("Tijd")
-    plt.ylabel("Watt")
-    plt.title("Electriciteit Geleverd/Verbruik")
+    # plt.bar(uur, elecACTgeleverd, label='lev', color='green')
+    # plt.bar(uur, elecACTverbruik, label='ver', color='red')
+    # plt.bar(uur, waterLtr, label='water', color='blue')
+    # plt.ylim(0, 4500)
+    # plt.bar(datumStart, boilerStatus, label='ver', color='red')
+    # plt.bar(datumStop, boilerStatus)
+    # plt.bar(tijd, tijdsDuur, label='ver', color='red')
+    # plt.bar(tijd, tijdsDuur, label='ver', color='red')
+
+    # plt.xlabel("Tijd")
+    # plt.ylabel("Watt")
+    # plt.title("Electriciteit Geleverd/Verbruik")
+    # plt.xlabel("Tijd")
+    # plt.ylabel("Boiler")
+    # plt.title("Electriciteit Geleverd/Verbruik")
+    plt.xticks(rotation=45)
     plt.show()
 
 except Exception as e:
-     print("Query mislukt...")
-     print(e)
+    print("Query mislukt...")
+    print(e)
 
 db_connection.close()
 
-    # db_cursor.execute("select * from energiemeter")
-    # db_cursor.execute("SELECT date, elecTOTgeleverd, elecACTgeleverd FROM energiemeter")
+# db_cursor.execute("select * from energiemeter")
+# db_cursor.execute("SELECT date, elecTOTgeleverd, elecACTgeleverd FROM energiemeter")
 
 #     query = "SELECT date, elecTOTgeleverd, elecACTgeleverd FROM energiemeter"
 #     result_data = pd.read_sql(query, db_connection)
@@ -170,6 +238,16 @@ db_connection.close()
 # plt.show()
 
 """
+def time_to_int(dateobj):
+    total = int(dateobj.strftime('%S'))
+    total += int(dateobj.strftime('%M')) * 60
+    total += int(dateobj.strftime('%H')) * 60 * 60
+    total += (int(dateobj.strftime('%j')) - 1) * 60 * 60 * 24
+    total += (int(dateobj.strftime('%Y')) - 1970) * 60 * 60 * 24 * 365
+    return total
+
+
+
 result_dataFrame.plot
 result_dataFrame.to_csv('Test.csv')
 result_dataFrame.info()
@@ -213,7 +291,7 @@ plt.xlabel('Time')
 plt.ylabel('EnergieGeleverd')
 plt.show()
 """
-#plt.plot(date, elecACTgeleverd, color='g', label="Actueel Geleverd")
+# plt.plot(date, elecACTgeleverd, color='g', label="Actueel Geleverd")
 # plt.plot(elecACTgeleverd, color='g', label="Actueel Geleverd", linestyle = 'dotted')
 # plt.grid()
 # plt.legend()

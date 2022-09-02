@@ -1,4 +1,5 @@
 # https://saralgyaan.com/posts/matplotlib-tutorial-in-python-chapter-1-introduction/
+import datetime
 from datetime import *
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -22,6 +23,12 @@ z = []
 datetime_str = "31OCT2020231032"
 
 datum = []
+# datumStart = []
+#datumStop = []
+datumVerschil = []
+tijdsDuur = []
+timeState = True
+
 jaar = []
 maand = []
 dag = []
@@ -34,6 +41,7 @@ tijdtst = []
 waterLtr = []
 elecACTgeleverd = []
 elecACTverbruik = []
+boilerStatus = []
 
 teller = 0
 
@@ -65,7 +73,7 @@ for rows in db_cursor:
 
 try:
     #db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter ")
-    db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-06-30 19:21:18'")
+    db_cursor.execute("SELECT datum, elecACTverbruik, elecACTgeleverd FROM buffervat WHERE datum >= '2022-08-20 00:00:00' AND datum <= '2022-08-20 23:59:59'")
     #db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-07-01 23:00:00'")
     #db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-07-01 23:00:00'")
     # query_data = "SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter"
@@ -79,11 +87,12 @@ try:
         datum.append(row[0])
         #print(datum)
         #waterLtr = row[1]
-        waterLtr.append(row[1])
+        boilerStatus.append(row[1])
         #print(waterLtr)
         #elecACTgeleverd = row[2]
-        elecACTgeleverd.append(row[2])
-        elecACTverbruik.append(row[3])
+        # elecACTgeleverd.append(row[2])
+        # elecACTverbruik.append(row[3])
+
 
         jaar.append(datum[teller].year)
         maand.append(datum[teller].month)
@@ -91,10 +100,24 @@ try:
         uur.append(datum[teller].hour)
         min.append(datum[teller].minute)
         sec.append(datum[teller].second)
-        #tijd.append(datum[teller].time)
         tijd.append(str(datum[teller].hour) + ':' + str(datum[teller].minute) + ':' + str(datum[teller].second))
-        teller = teller + 1
 
+        # if(boilerStatus[teller] == 1 and timeState is True):
+        #     datumStart = datum[teller]
+        #     datumStartInt = int(datumStart.strftime('%H%M%S'))
+        #     print("Datumstart: ", datumStart)
+        #     timeState = False
+        # if(boilerStatus[teller] == 0 and timeState is False):
+        #     datumStop = datum[teller]
+        #     datumStopInt = int(datumStop.strftime('%H%M%S'))
+        #     print("Datumstop: ", datumStop)
+        #     timeState = True
+        #     datumDiv = datumStopInt - datumStartInt
+        #     print("DatumDiv: ", datumDiv)
+        #     datumStart = str(datum[teller].hour) + ':' + str(datum[teller].minute) + ':' + str(datum[teller].second)
+        #     datumStop = str(datum[teller].hour) + ':' + str(datum[teller].minute) + ':' + str(datum[teller].second)
+        #     plt.bar(datumStart, datumDiv, label='ver', color='red')
+        # teller = teller + 1
 
     #datum[0] is datetime.datetime object
     # jaar = datum[0].year
@@ -117,10 +140,11 @@ try:
     #tijd = "{:02d}:{:02d}:{:02d}".format(uur, min, sec)
     #print("Tijd: {:02d}:{:02d}:{:02d}".format(uur, min, sec))
     #tijdtst = uur + ':' + min
-    print("Tijd: ", tijd)
-    #print("Tijd: ", uur)
+    # print("Tijd: ", tijd)
+    #print("TijdsDuur: ", tijdsDuur)
+
+    print("Tijd: ", uur)
     #print("Datum: ", datum)
-    #print("Water: ", waterLtr)
     print("ElecGel: ", elecACTgeleverd)
     print("ElecVer: ", elecACTverbruik)
 
@@ -131,13 +155,22 @@ try:
     #plt.bar(dag, elecACTgeleverd)
     # plt.bar(tijd, elecACTgeleverd, label='lev', color='green')
     # plt.bar(tijd, elecACTverbruik, label='ver', color='red')
-    plt.bar(uur, elecACTgeleverd, label='lev', color='green')
-    plt.bar(uur, elecACTverbruik, label='ver', color='red')
-    plt.bar(uur, waterLtr, label='water', color='blue')
-    plt.ylim(0, 4500)
-    plt.xlabel("Tijd")
-    plt.ylabel("Watt")
-    plt.title("Electriciteit Geleverd/Verbruik")
+    # plt.bar(uur, elecACTgeleverd, label='lev', color='green')
+    # plt.bar(uur, elecACTverbruik, label='ver', color='red')
+    # plt.bar(uur, waterLtr, label='water', color='blue')
+    #plt.ylim(0, 4500)
+    #plt.bar(datumStart, boilerStatus, label='ver', color='red')
+    #plt.bar(datumStop, boilerStatus)
+    #plt.bar(tijd, tijdsDuur, label='ver', color='red')
+    # plt.bar(tijd, tijdsDuur, label='ver', color='red')
+
+    # plt.xlabel("Tijd")
+    # plt.ylabel("Watt")
+    # plt.title("Electriciteit Geleverd/Verbruik")
+    #plt.xlabel("Tijd")
+    #plt.ylabel("Boiler")
+    # plt.title("Electriciteit Geleverd/Verbruik")
+    plt.xticks(rotation=45)
     plt.show()
 
 except Exception as e:
@@ -170,6 +203,16 @@ db_connection.close()
 # plt.show()
 
 """
+def time_to_int(dateobj):
+    total = int(dateobj.strftime('%S'))
+    total += int(dateobj.strftime('%M')) * 60
+    total += int(dateobj.strftime('%H')) * 60 * 60
+    total += (int(dateobj.strftime('%j')) - 1) * 60 * 60 * 24
+    total += (int(dateobj.strftime('%Y')) - 1970) * 60 * 60 * 24 * 365
+    return total
+
+
+
 result_dataFrame.plot
 result_dataFrame.to_csv('Test.csv')
 result_dataFrame.info()
