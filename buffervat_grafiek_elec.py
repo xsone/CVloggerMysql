@@ -3,10 +3,15 @@ import datetime
 from datetime import *
 import pandas as pd
 import matplotlib.pyplot as plt
+from LinearRegression import r2_score
+from numpy import sqrt
 from scipy import stats
 import matplotlib.dates as mdates
 import time
 import mysql.connector
+from skimage.metrics import mean_squared_error
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
 
 # plt.plot([0,1,2,3,4], label='y = x')
 # plt.title('Y = X Straight Line')
@@ -69,10 +74,31 @@ for rows in db_cursor:
 # str(rows)[0:200]
 # print(rows)
 
+# df = pd.read_sql("SELECT datum, elecACTverbruik, elecACTgeleverd FROM buffervat WHERE datum >= '2022-08-29 11:00:00' AND datum <= '2022-08-29 11:30:00'", db_connection)
+# print(df)
+# my_data = df.dropna()
+# df.isnull().sum()
+#
+# y = df['elecACTgeleverd']
+# X = df.drop(['datum', 'elecACTverbruik', 'elecACTgeleverd'], axis=1)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# model = LinearRegression()
+# model.fit(X_train, y_train)
+# y_train_score = model.predict(X_train)
+# y_test_score = model.predict(X_test)
+#
+# print('Train data:')
+# print('RSME = ' + str(sqrt(mean_squared_error(y_train, y_train_score))))
+# print('R^2 = ' + str(r2_score(y_train, y_train_score)))
+#
+# print('Test data:')
+# print('RSME = ' + str(sqrt(mean_squared_error(y_test, y_test_score))))
+# print('R^2 = ' + str(r2_score(y_test, y_test_score)))
 
 try:
     #db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter ")
-    db_cursor.execute("SELECT datum, elecACTverbruik, elecACTgeleverd FROM buffervat WHERE datum >= '2022-08-29 11:00:00' AND datum <= '2022-08-29 11:10:00'")
+    #db_cursor.execute("SELECT datum, elecACTverbruik, elecACTgeleverd FROM buffervat WHERE datum >= '2022-08-29 11:00:00' AND datum <= '2022-08-29 11:30:00'") #per 10 sec.
+    db_cursor.execute("SELECT datum, elecACTverbruik, elecACTgeleverd FROM buffervat WHERE datum >= '2022-09-05 00:00:00' AND datum <= '2022-09-05 23:59:59'") #per dag
     #db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-07-01 23:00:00'")
     #db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-07-01 23:00:00'")
     # query_data = "SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter"
@@ -155,21 +181,23 @@ try:
     # plt.bar(sec, elecACTverbruik, label='ver', color='red')
     # plt.bar(sec, elecACTgeleverd, label='lev', color='green')
 
-    slope, intercept, r, p, std_err = stats.linregress(sec, elecACTgeleverd)
+    eenheid = uur
+
+    slope, intercept, r, p, std_err = stats.linregress(eenheid, elecACTgeleverd)
     print(r)
 
-    def myfunc(sec):
-        return slope * sec + intercept
+    def myfunc(eenheid):
+        return slope * eenheid + intercept
 
-    mymodel = list(map(myfunc, sec))
-    elecACTvoorspel = myfunc(40)
+    mymodel = list(map(myfunc, eenheid))
+    elecACTvoorspel = myfunc(12)
     print(elecACTvoorspel)
 
-    plt.scatter(sec, elecACTgeleverd)
-    plt.plot(sec, mymodel)
-    # plt.bar(uur, elecACTgeleverd, label='lev', color='green')
-    # plt.bar(uur, elecACTverbruik, label='ver', color='red')
-    # plt.bar(uur, waterLtr, label='water', color='blue')
+    plt.scatter(eenheid, elecACTgeleverd)
+    plt.plot(eenheid, mymodel)
+    # plt.bar(eenheid, elecACTgeleverd, label='lev', color='green')
+    # plt.bar(eenheid, elecACTverbruik, label='ver', color='red')
+    # # plt.bar(uur, waterLtr, label='water', color='blue')
     #plt.ylim(0, 4500)
     #plt.bar(datumStart, boilerStatus, label='ver', color='red')
     #plt.bar(datumStop, boilerStatus)

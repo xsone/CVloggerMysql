@@ -55,13 +55,14 @@ waterLtr = []
 elecACTgeleverd = []
 elecACTverbruik = []
 boilerStatus = []
+retourTemp = []
 
 teller = 0
 
 
-def addlabels(x, y):
-    for i in range(len(x)):
-        plt.text(i, y[i], y[i])
+# def addlabels(x, y):
+#     for i in range(len(x)):
+#         plt.text(i, y[i], y[i])
 
 
 db_connection = mysql.connector.connect(
@@ -93,7 +94,7 @@ for rows in db_cursor:
 try:
     # db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter ")
     db_cursor.execute(
-        "SELECT datum, boilerStatus FROM cvlogger WHERE datum >= '2022-08-31 00:00:00' AND datum <= '2022-08-31 23:59:59'")
+        "SELECT datum, boilerStatus, retourTemp FROM cvlogger WHERE datum >= '2022-09-01 00:00:00' AND datum <= '2022-09-06 23:59:59'")
         #"SELECT datum, boilerStatus FROM cvlogger WHERE datum >= '" + datumBegin + " 00:00:00' AND datum <= '" + datumEind + " 23:59:59'")
 
     # db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-07-01 23:00:00'")
@@ -112,7 +113,7 @@ try:
         boilerStatus.append(row[1])
         # print(waterLtr)
         # elecACTgeleverd = row[2]
-        # elecACTgeleverd.append(row[2])
+        retourTemp.append(row[2])
         # elecACTverbruik.append(row[3])
 
         jaar.append(tijd[teller].year)
@@ -123,6 +124,7 @@ try:
         sec.append(tijd[teller].second)
         datum.append(str(tijd[teller].year) + '-' + str(tijd[teller].month) + '-' + str(tijd[teller].day) + ' ' +
                      str(tijd[teller].hour) + ':' + str(tijd[teller].minute) + ':' + str(tijd[teller].second))
+        plt.plot(datum, retourTemp, label='ver', color='blue')
 
         if (boilerStatus[teller] == 1 and timeState is True):
             tijdStart = tijd[teller]
@@ -144,11 +146,14 @@ try:
 
             #datumStart = tijdStart + datumBegin
             plt.text(datumStart, tijdDiv, tijdDiv, ha='center', color='red')
-            plt.bar(datumStart, tijdDiv, label='ver', color='red')
+            plt.bar(datumStart, tijdDiv/10, label='ver', color='red')
+
             #plt.ylabel(datumStart, datumDiv)
             # calling the function to add value labels
 
             # plt.bar(sec, datumDiv, label='ver', color='red')
+            #plt.bar(datumStart, retourTemp, label='ver', color='blue')
+
         teller = teller + 1
 
     # datum[0] is datetime.datetime object
@@ -205,6 +210,7 @@ try:
     # plt.xlabel("Tijd")
     # plt.ylabel("Boiler")
     # plt.title("Electriciteit Geleverd/Verbruik")
+
     plt.xticks(rotation=45)
     plt.show()
 
