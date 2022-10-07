@@ -30,6 +30,8 @@ plt.ylabel('Retour temp CV')
 # plt.show()
 
 
+jaarNr = "2022"
+
 x = []
 y = []
 z = []
@@ -53,6 +55,7 @@ datumEind = "2022-08-30"
 
 jaar = []
 maand = []
+week = []
 dag = []
 uur = []
 min = []
@@ -63,7 +66,7 @@ waterLtr = []
 elecACTgeleverd = []
 elecACTverbruik = []
 boilerStatus = []
-retourTemp = []
+retourcvTemp = []
 
 x = []
 y = []
@@ -103,12 +106,14 @@ for rows in db_cursor:
 # str(rows)[0:200]
 # print(rows)
 
+#sql = "SELECT datum, retourcvTemp FROM cvlogger WHERE datum >= '" + jaarNr + "-09-10 00:00:00' AND datum <= '" + jaarNr + "-09-12 23:59:59'"
 
 try:
     # db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter ")
     db_cursor.execute(
-        "SELECT datum, retourTemp FROM cvlogger WHERE datum >= '2022-09-10 00:00:00' AND datum <= '2022-09-12 23:59:59'")
+        #"SELECT datum, retourcvTemp FROM cvlogger WHERE datum >= '2022-09-10 00:00:00' AND datum <= '2022-09-12 23:59:59'")
         #"SELECT datum, boilerStatus FROM cvlogger WHERE datum >= '" + datumBegin + " 00:00:00' AND datum <= '" + datumEind + " 23:59:59'")
+        "SELECT datum, retourcvTemp FROM cvlogger WHERE datum >= '" + jaarNr + "-09-10 00:00:00' AND datum <= '" + jaarNr + "-09-12 23:59:59'")
 
     # db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-07-01 23:00:00'")
     # db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-07-01 23:00:00'")
@@ -133,7 +138,7 @@ try:
         #x.append(row[0])
         #print(x)
         # waterLtr = row[1]
-        retourTemp.append(row[1])
+        retourcvTemp.append(row[1])
         y.append(row[1])
         #print(y)
         # elecACTgeleverd = row[2]
@@ -142,32 +147,34 @@ try:
 
         jaar.append(tijd[teller].year)
         maand.append(tijd[teller].month)
+        week.append(tijd[teller].strftime("%V"))
         dag.append(tijd[teller].day)
         uur.append(tijd[teller].hour)
         min.append(tijd[teller].minute)
         sec.append(tijd[teller].second)
         datum.append(str(tijd[teller].year) + '-' + str(tijd[teller].month) + '-' + str(tijd[teller].day) + ' ' +
                      str(tijd[teller].hour) + ':' + str(tijd[teller].minute) + ':' + str(tijd[teller].second))
-
+        #week.append(datum.strftime('%W'))
         x.append(tijd[teller].day)
 
 
         #plt.text(datumStart, tijdDiv, tijdDiv, ha='center', color='red')
         #plt.bar(datum, retourTemp, label='ver', color='red')
         #plt.plot(datum, retourTemp, label='ver', color='red')
+        plt.bar(week, retourcvTemp, label='ver', color='red')
 
         # if retourTemp[teller] < 26.5:
         #     print("RetourtempMin: ", retourTemp[teller], datum[teller])
 
-        if retourTemp[teller] > 56.0:
-            print("RetourtempMax: ", retourTemp[teller], datum[teller])
+        if retourcvTemp[teller] > 56.0:
+            print("RetourtempMax: ", retourcvTemp[teller], datum[teller])
 
 
         #retourTempMin = retourTemp[teller]
-        if retourTempMin > retourTemp[teller]:
-            retourTempMin = retourTemp[teller]
-        if retourTempMax < retourTemp[teller]:
-            retourTempMax = retourTemp[teller]
+        if retourTempMin > retourcvTemp[teller]:
+            retourTempMin = retourcvTemp[teller]
+        if retourTempMax < retourcvTemp[teller]:
+            retourTempMax = retourcvTemp[teller]
 
         teller = teller + 1
 
@@ -181,7 +188,7 @@ try:
         print("y: ", y)
 
 
-
+#Gedeelte t.b.v. AI-voorspelling
     # Split the data into train and test dataset
     #x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=1 / 3, random_state=42)
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state =0)
@@ -215,18 +222,15 @@ try:
 
 
     # Visualising the Training set results in a scatter plot
-    plt.scatter(x_train, y_train, color='red')
-    plt.plot(x_train, regressorObject.predict(x_train), color='blue')
-    plt.title('RetourTemp versus Datum (Training set)')
-    plt.xlabel('Datum ')
-    plt.ylabel('RetourTemp (in degrees Celcius)')
-    plt.show()
-
-
+    # plt.scatter(x_train, y_train, color='red')
+    # plt.plot(x_train, regressorObject.predict(x_train), color='blue')
+    # plt.title('RetourTemp versus Datum (Training set)')
+    # plt.xlabel('Datum ')
+    # plt.ylabel('RetourTemp (in degrees Celcius)')
+    # plt.show()
 
     eenheid = sec
-
-    slope, intercept, r, p, std_err = stats.linregress(eenheid, retourTemp)
+    slope, intercept, r, p, std_err = stats.linregress(eenheid, retourcvTemp)
     print(r)
 
     def myfunc(eenheid):

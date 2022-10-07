@@ -12,7 +12,7 @@ import mysql.connector
 f = plt.figure()
 f.set_figwidth(15)
 f.set_figheight(9)
-plt.title('Boiler AAN in sec.')
+plt.title('Boiler AAN in sec. of min.')
 plt.xlabel('Tijdstip boiler AAN')
 plt.ylabel('Sec. AAN')
 
@@ -45,6 +45,7 @@ datumEind = "2022-08-30"
 
 jaar = []
 maand = []
+week = []
 dag = []
 uur = []
 min = []
@@ -55,7 +56,7 @@ waterLtr = []
 elecACTgeleverd = []
 elecACTverbruik = []
 boilerStatus = []
-retourTemp = []
+retourcvTemp = []
 
 teller = 0
 
@@ -94,7 +95,7 @@ for rows in db_cursor:
 try:
     # db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd FROM energiemeter ")
     db_cursor.execute(
-        "SELECT datum, boilerStatus, retourTemp FROM cvlogger WHERE datum >= '2022-09-01 00:00:00' AND datum <= '2022-09-06 23:59:59'")
+        "SELECT datum, boilerStatus, retourcvTemp FROM cvlogger WHERE datum >= '2022-09-01 00:00:00' AND datum <= '2022-10-07 23:59:59'")
         #"SELECT datum, boilerStatus FROM cvlogger WHERE datum >= '" + datumBegin + " 00:00:00' AND datum <= '" + datumEind + " 23:59:59'")
 
     # db_cursor.execute("SELECT datum, waterLtr, elecACTgeleverd, elecACTverbruik FROM energiemeter WHERE datum >= '2022-06-30 06:19:03' AND datum <= '2022-07-01 23:00:00'")
@@ -113,18 +114,19 @@ try:
         boilerStatus.append(row[1])
         # print(waterLtr)
         # elecACTgeleverd = row[2]
-        retourTemp.append(row[2])
+        retourcvTemp.append(row[2])
         # elecACTverbruik.append(row[3])
 
         jaar.append(tijd[teller].year)
         maand.append(tijd[teller].month)
+        week.append(tijd[teller].strftime("%V"))
         dag.append(tijd[teller].day)
         uur.append(tijd[teller].hour)
         min.append(tijd[teller].minute)
         sec.append(tijd[teller].second)
         datum.append(str(tijd[teller].year) + '-' + str(tijd[teller].month) + '-' + str(tijd[teller].day) + ' ' +
                      str(tijd[teller].hour) + ':' + str(tijd[teller].minute) + ':' + str(tijd[teller].second))
-        plt.plot(datum, retourTemp, label='ver', color='blue')
+        #plt.plot(datum, retourcvTemp, label='ver', color='blue')
 
         if (boilerStatus[teller] == 1 and timeState is True):
             tijdStart = tijd[teller]
@@ -145,14 +147,18 @@ try:
                          str(tijd[teller].hour) + ':' + str(tijd[teller].minute) + ':' + str(tijd[teller].second))
 
             #datumStart = tijdStart + datumBegin
-            plt.text(datumStart, tijdDiv, tijdDiv, ha='center', color='red')
-            plt.bar(datumStart, tijdDiv/10, label='ver', color='red')
+            if (tijdDiv > 300):
+                plt.text(datumStart, tijdDiv, tijdDiv, ha='center', color='red')
+                #plt.bar(datumStart, tijdDiv/10, label='ver', color='red')
+                plt.bar(datumStart, tijdDiv, label='ver', color='red')
+                #plt.text(datumStart, retourcvTemp, retourcvTemp, ha='center', color='blue')
+                #plt.bar(datumStart, retourcvTemp, label='ver', color='blue')
 
             #plt.ylabel(datumStart, datumDiv)
             # calling the function to add value labels
 
             # plt.bar(sec, datumDiv, label='ver', color='red')
-            #plt.bar(datumStart, retourTemp, label='ver', color='blue')
+            #plt.bar(datumStart, retourcvTemp, label='ver', color='blue')
 
         teller = teller + 1
 
